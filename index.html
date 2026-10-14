@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d1a17">
+<title>L & P Vaults</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  --stone:#1d1a17; --stone-2:#2a2520; --stone-3:#3a332b;
+  --gold:#d9a93c; --gold-hi:#f5d77a; --gold-lo:#8a6420;
+  --ink:#efe4cc; --muted:#a8987c;
+  --display:"Cinzel Decorative","Trajan Pro",Georgia,serif;
+  --label:"Cinzel",Georgia,serif;
+  --body:"Spectral",Georgia,"Times New Roman",serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--stone);color:var(--ink)}
+body{
+  font-family:var(--body);font-size:16px;line-height:1.5;
+  padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(40px + env(safe-area-inset-bottom,0px));
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(217,169,60,.18), transparent 60%),
+    repeating-linear-gradient(0deg, transparent 0 46px, rgba(0,0,0,.25) 46px 48px),
+    repeating-linear-gradient(90deg, transparent 0 94px, rgba(0,0,0,.18) 94px 96px),
+    var(--stone);
+  min-height:100vh;
+}
+.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+header{text-align:center;display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-family:var(--label);letter-spacing:.3em;text-transform:uppercase;font-size:.75rem;color:var(--muted)}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(1.8rem,6vw,3rem);margin:0;color:var(--gold);
+  text-shadow:0 2px 0 var(--gold-lo),0 0 24px rgba(217,169,60,.35);text-wrap:balance}
+.treasury{
+  background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.15));
+  border:2px solid var(--gold-lo);border-radius:16px;padding:18px 18px 14px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:18px;align-items:center;
+}
+.treasury .stats{display:flex;flex-direction:column;gap:6px;min-width:0}
+.treasury .k{font-family:var(--label);font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
+.treasury .big{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.4rem);line-height:1;color:var(--gold-hi);
+  font-variant-numeric:tabular-nums;text-shadow:0 2px 0 var(--gold-lo)}
+.split{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--label);font-size:.9rem}
+.split b{color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.next{font-style:italic;color:var(--muted);font-size:.9rem;margin:0}
+.next b{color:var(--ink);font-style:normal}
+.bar{height:8px;border-radius:4px;background:rgba(0,0,0,.45);border:1px solid var(--gold-lo);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold-lo),var(--gold-hi));transition:width .4s ease}
+canvas.hoard{width:100%;display:block}
+.treasury canvas{height:170px}
+@media (max-width:620px){.treasury{grid-template-columns:1fr}}
+.vaults{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.vault{
+  background:linear-gradient(180deg,var(--stone-3),var(--stone-2));
+  border:3px solid var(--gold-lo);border-radius:140px 140px 14px 14px;
+  box-shadow:inset 0 0 0 6px var(--stone),inset 0 0 0 8px var(--gold-lo),0 12px 30px rgba(0,0,0,.6);
+  padding:36px 22px 22px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;min-width:0;
+}
+.num{font-family:var(--label);font-size:.75rem;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.vault h2{font-family:var(--display);font-size:2rem;margin:0;color:var(--gold)}
+.dial{
+  width:150px;height:150px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,var(--gold-hi),var(--gold) 40%,var(--gold-lo) 100%);
+  border:4px solid var(--gold-lo);box-shadow:0 6px 16px rgba(0,0,0,.6),inset 0 0 0 10px rgba(0,0,0,.15);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#2b1d07;position:relative;transition:transform .5s cubic-bezier(.3,1.6,.5,1);
+}
+.dial::before{content:"";position:absolute;inset:14px;border-radius:50%;border:2px dashed rgba(43,29,7,.4)}
+.dial .amt{font-family:var(--display);font-weight:900;font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.dial .cap{font-family:var(--label);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
+.dial.spin{transform:rotate(25deg)}
+.dial.spin .amt,.dial.spin .cap{transform:rotate(-25deg)}
+.vault canvas{height:120px;border-bottom:2px solid var(--gold-lo)}
+.earned{font-family:var(--label);font-size:.85rem;color:var(--muted);margin:0}
+.earned b{color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.rule{font-style:italic;color:var(--ink);background:rgba(0,0,0,.3);border:1px solid var(--gold-lo);
+  border-radius:8px;padding:10px 14px;margin:0;max-width:30ch}
+.rule b{color:var(--gold-hi);font-style:normal}
+button{font-family:var(--label);font-weight:700;cursor:pointer;border-radius:10px;letter-spacing:.06em}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold-hi);outline-offset:3px}
+.deposit{
+  width:100%;max-width:260px;font-size:1.2rem;padding:16px;color:#2b1d07;
+  background:linear-gradient(180deg,var(--gold-hi),var(--gold));border:2px solid var(--gold-lo);
+  box-shadow:0 5px 0 var(--gold-lo),0 8px 16px rgba(0,0,0,.5);
+}
+.deposit:active{transform:translateY(4px);box-shadow:0 1px 0 var(--gold-lo)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.small{background:transparent;color:var(--ink);border:1.5px solid var(--gold-lo);padding:9px 14px;font-size:.85rem}
+.small:hover{background:rgba(217,169,60,.12)}
+.small:disabled{opacity:.35;cursor:default}
+.setter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.setter[hidden]{display:none!important}
+.setter label{font-family:var(--label);font-size:.8rem;color:var(--muted)}
+.setter input{width:90px;font:600 1.1rem var(--body);padding:8px;border-radius:8px;border:1.5px solid var(--gold-lo);
+  background:var(--stone);color:var(--ink);text-align:center}
+.ok{background:var(--gold);color:#2b1d07;border:none;padding:10px 14px}
+.log{font-size:.85rem;color:var(--muted);min-height:1.3em;margin:0}
+.coin{position:fixed;width:34px;height:34px;border-radius:50%;pointer-events:none;z-index:5;
+  background:radial-gradient(circle at 35% 30%,var(--gold-hi),var(--gold) 55%,var(--gold-lo));
+  border:2px solid var(--gold-lo);display:flex;align-items:center;justify-content:center;
+  font:900 16px var(--label);color:#2b1d07;animation:fly .8s ease-in forwards}
+@keyframes fly{0%{transform:translate(0,0) scale(1)}100%{transform:translate(var(--dx),var(--dy)) scale(.4);opacity:0}}
+footer{text-align:center;color:var(--muted);font-size:.8rem}
+@media (prefers-reduced-motion:reduce){.dial,.bar i{transition:none}.coin{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Est. by Mum &amp; Dad · Underground Branch</span>
+    <h1>The Family Vaults</h1>
+  </header>
+
+  <section class="treasury" aria-label="All-time earnings">
+    <div class="stats">
+      <span class="k">Earned all-time</span>
+      <span class="big" id="grand-earned">$0</span>
+      <div class="split"><span>L <b id="earned-L">$0</b></span><span>P <b id="earned-P">$0</b></span><span>In vaults <b id="grand-now">$0</b></span></div>
+      <div class="bar" aria-hidden="true"><i id="bar-fill"></i></div>
+      <p class="next" id="next">Every $10 becomes a gold bar.</p>
+    </div>
+    <canvas class="hoard" id="hoard-all" aria-label="Pile of gold showing all money earned"></canvas>
+  </section>
+
+  <main class="vaults">
+    <section class="vault" data-id="L">
+      <span class="num">Vault No. 1</span>
+      <h2>L's Vault</h2>
+      <div class="dial"><span class="amt">$0</span><span class="cap">dollars</span></div>
+      <canvas class="hoard" aria-label="Gold in L's vault"></canvas>
+      <p class="earned">Earned all-time: <b class="earned-amt">$0</b></p>
+      <button class="deposit" type="button">Deposit $1</button>
+      <div class="row">
+        <button class="small undo" type="button">Undo</button>
+        <button class="small set" type="button">Set amount</button>
+      </div>
+      <form class="setter" hidden>
+        <label for="set-L">New total $</label>
+        <input id="set-L" type="number" min="0" step="1" inputmode="numeric">
+        <button class="ok" type="submit">Save</button>
+      </form>
+      <p class="log" aria-live="polite"></p>
+    </section>
+
+    <section class="vault" data-id="P">
+      <span class="num">Vault No. 2</span>
+      <h2>P's Vault</h2>
+      <div class="dial"><span class="amt">$0</span><span class="cap">dollars</span></div>
+      <canvas class="hoard" aria-label="Gold in P's vault"></canvas>
+      <p class="earned">Earned all-time: <b class="earned-amt">$0</b></p>
+      <p class="rule">Finish your <b>Kumon pages</b> and earn <b>$1</b> into your vault!</p>
+      <button class="deposit" type="button">Deposit $1</button>
+      <div class="row">
+        <button class="small undo" type="button">Undo</button>
+        <button class="small set" type="button">Set amount</button>
+      </div>
+      <form class="setter" hidden>
+        <label for="set-P">New total $</label>
+        <input id="set-P" type="number" min="0" step="1" inputmode="numeric">
+        <button class="ok" type="submit">Save</button>
+      </form>
+      <p class="log" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer>Each coin is $1 · each gold bar is $10 · totals are kept on this device.</footer>
+</div>
+
+<script>
+const KEY
